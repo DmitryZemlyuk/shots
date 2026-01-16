@@ -71,6 +71,8 @@
                 display: inline-block;
                 margin-left: 12px;
                 vertical-align: middle;
+                top: -2px;
+                position: relative;
             }
 
             body.hide-shots-enabled
