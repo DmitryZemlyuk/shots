@@ -3,15 +3,15 @@
 
     if (!window.Lampa || !Lampa.SettingsApi) return;
 
-    var STORAGE_KEY = 'hide_shots_enabled';
+    var STORAGE_KEY = 'hide_shots_mode';
     var observer = null;
 
-    function isEnabled(v) {
-        return v === true || v === 'true';
+    function isHide() {
+        return Lampa.Storage.get(STORAGE_KEY, 'hide') === 'hide';
     }
 
     function applyHideState() {
-        var enabled = isEnabled(Lampa.Storage.get(STORAGE_KEY, 'true'));
+        var hide = isHide();
 
         document.querySelectorAll('.selectbox-item').forEach(function (item) {
             var use = item.querySelector('use');
@@ -19,14 +19,14 @@
 
             var href = use.getAttribute('xlink:href') || use.getAttribute('href');
             if (href === '#sprite-shots') {
-                item.style.display = enabled ? 'none' : '';
+                item.style.display = hide ? 'none' : '';
             }
         });
 
         document
             .querySelectorAll('.shots-player-recordbutton')
             .forEach(function (el) {
-                el.style.display = enabled ? 'none' : '';
+                el.style.display = hide ? 'none' : '';
             });
     }
 
@@ -37,34 +37,41 @@
         applyHideState();
     }
 
-    // === SETTINGS (MAIN LEVEL) ===
+    // === SETTINGS ===
     Lampa.Listener.follow('app', function (e) {
-    if (e.type !== 'ready') return;
+        if (e.type !== 'ready') return;
 
-    Lampa.SettingsApi.addParam({
-        component: 'interface', // ← ВАЖНО
-        param: {
-            name: 'hide_shots_enabled',
-            type: 'select',
-            values: {
-                'true': 'Скрыть Shorts',
-                'false': 'Показать Shorts'
+        Lampa.SettingsApi.addComponent({
+            component: 'hide_shots',
+            name: 'Hide Shots',
+            icon:
+                '<svg viewBox="0 0 512 512" fill="currentColor">' +
+                '<path d="M253.266 512a19.166 19.166 0 0 1-19.168-19.168V330.607l-135.071-.049a19.164 19.164 0 0 1-16.832-28.32L241.06 10.013a19.167 19.167 0 0 1 36.005 9.154v162.534h135.902a19.167 19.167 0 0 1 16.815 28.363L270.078 502.03a19.173 19.173 0 0 1-16.812 9.97z"/>' +
+                '</svg>'
+        });
+
+        Lampa.SettingsApi.addParam({
+            component: 'hide_shots',
+            param: {
+                name: STORAGE_KEY,
+                type: 'select',
+                values: {
+                    hide: 'Скрыть Shots',
+                    show: 'Показать Shots'
+                },
+                'default': 'hide'
             },
-            'default': 'true'
-        },
-        field: {
-            name: 'Скрывать Shots',
-            description: 'Убирает пункт Shots и кнопку записи'
-        },
-        onChange: function (value) {
-            Lampa.Storage.set('hide_shots_enabled', value);
-            applyHideState();
-        }
+            field: {
+                name: 'Режим отображения',
+                description: 'Выберите, показывать или скрывать Shots'
+            },
+            onChange: function (value) {
+                Lampa.Storage.set(STORAGE_KEY, value);
+                applyHideState();
+            }
+        });
+
+        startObserver();
     });
-
-    startObserver();
-    });
-
-
 
 })();
