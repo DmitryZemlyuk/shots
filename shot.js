@@ -1,4 +1,4 @@
-// == Hide Shots | Separate Settings Screen (FINAL) ==
+// == Hide Shots | Manual Settings UI (MDBList-style) ==
 (function () {
     'use strict';
 
@@ -7,7 +7,11 @@
     var STORAGE_KEY = 'hide_shots_enabled';
     var observer = null;
     var originalDisplay = new WeakMap();
-    var settings_registered = false;
+    var screen_drawn = false;
+
+    /* =======================
+       LOGIC
+    ======================= */
 
     function isEnabled(v) {
         return v === true || v === 'true';
@@ -33,10 +37,7 @@
             var use = item.querySelector('use');
             if (!use) return;
 
-            var href =
-                use.getAttribute('xlink:href') ||
-                use.getAttribute('href');
-
+            var href = use.getAttribute('xlink:href') || use.getAttribute('href');
             if (href === '#sprite-shots') {
                 enabled ? hideElement(item) : showElement(item);
             }
@@ -67,10 +68,47 @@
         isEnabled(v) ? startObserver() : stopObserver();
     }
 
+    /* =======================
+       SETTINGS SCREEN
+    ======================= */
+
+    function drawSettingsScreen(container) {
+        if (screen_drawn) return;
+        screen_drawn = true;
+
+        var enabled = isEnabled(Lampa.Storage.get(STORAGE_KEY, true));
+
+        var html = document.createElement('div');
+        html.className = 'settings-param';
+
+        html.innerHTML = `
+            <div class="settings-param__name">Скрывать Shots</div>
+            <div class="settings-param__value">
+                <div class="toggle ${enabled ? 'checked' : ''}"></div>
+            </div>
+            <div class="settings-param__descr">
+                Убирает пункт Shots и кнопку записи
+            </div>
+        `;
+
+        var toggle = html.querySelector('.toggle');
+
+        toggle.addEventListener('click', function () {
+            enabled = !enabled;
+            Lampa.Storage.set(STORAGE_KEY, enabled);
+            toggle.classList.toggle('checked', enabled);
+            applyState(enabled);
+        });
+
+        container.appendChild(html);
+    }
+
+    /* =======================
+       REGISTRATION
+    ======================= */
+
     Lampa.Listener.follow('app', function (e) {
         if (e.type !== 'ready') return;
-        if (settings_registered) return;
-        settings_registered = true;
 
         Lampa.SettingsApi.addComponent({
             component: 'hide_shots',
@@ -81,22 +119,15 @@
                 '</svg>'
         });
 
-        Lampa.SettingsApi.addParam({
-            component: 'hide_shots',
-            param: {
-                name: STORAGE_KEY,
-                type: 'toggle',
-                default: true
-            },
-            field: {
-                name: 'Скрывать Shots',
-                description: 'Убирает пункт Shots и кнопку записи'
-            },
-            onChange: function (value) {
-                applyState(value);
-            }
-        });
-
         applyState(Lampa.Storage.get(STORAGE_KEY, true));
     });
+
+    Lampa.Listener.follow('settings', function (e) {
+        if (e.type !== 'open') return;
+        if (e.page !== 'hide_shots') return;
+
+        screen_drawn = false;
+        drawSettingsScreen(e.container);
+    });
+
 })();
