@@ -58,34 +58,41 @@
         if (!observer) return;
         observer.disconnect();
         observer = null;
-        applyHideState(); // вернуть элементы
+        applyHideState();
     }
 
     function applyState(v) {
         isEnabled(v) ? startObserver() : stopObserver();
     }
 
-    applyState(Lampa.Storage.get(STORAGE_KEY, true));
+    Lampa.Listener.follow('app', function (e) {
+        if (e.type !== 'ready') return;
 
-    Lampa.Listener.follow('menu', function (e) {
-        if (e.type !== 'render') return;
-        if (!e.items) return;
-
-        if (e.items.some(function (i) { return i.id === 'hide_shots'; })) return;
-
-        e.items.push({
-            id: 'hide_shots',
-            title: 'Hide Shots',
-            toggle: true,
-            checked: isEnabled(Lampa.Storage.get(STORAGE_KEY, true)),
+        Lampa.SettingsApi.addComponent({
+            component: 'hide_shots',
+            name: 'Hide Shots',
             icon:
                 '<svg viewBox="0 0 24 24" fill="currentColor">' +
                 '<path d="M3 4h18v2H3zm0 7h18v2H3zm0 7h18v2H3z"/>' +
-                '</svg>',
+                '</svg>'
+        });
+
+        Lampa.SettingsApi.addParam({
+            component: 'hide_shots',
+            param: {
+                name: STORAGE_KEY,
+                type: 'toggle',
+                default: true
+            },
+            field: {
+                name: 'Скрывать Shots',
+                description: 'Убирает пункт Shots и кнопку записи'
+            },
             onChange: function (value) {
-                Lampa.Storage.set(STORAGE_KEY, value);
                 applyState(value);
             }
         });
+
+        applyState(Lampa.Storage.get(STORAGE_KEY, true));
     });
 })();
