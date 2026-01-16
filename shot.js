@@ -24,6 +24,10 @@
         return Lampa.Storage.get('hide_shots', false) === true;
     }
 
+    function updateBodyClass() {
+        document.body.classList.toggle('hide-shots-enabled', isEnabled());
+    }
+
     /* ---------------- LOGIC ---------------- */
 
     function applyHideShots() {
@@ -57,50 +61,25 @@
         const style = document.createElement('style');
         style.id = 'hide-shots-style';
         style.textContent = `
-            .hide-shots-name {
-                display: flex;
-                align-items: center;
-                gap: 10px;
-            }
-            .hide-shots-dot {
+            /* кружок */
+            .settings-param[data-name="hide_shots_toggle"] .settings-param__name::after {
+                content: '';
                 width: 10px;
                 height: 10px;
                 border-radius: 50%;
                 background: #666;
-                flex-shrink: 0;
+                display: inline-block;
+                margin-left: 12px;
+                vertical-align: middle;
             }
-            .hide-shots-dot.enabled {
+
+            body.hide-shots-enabled
+            .settings-param[data-name="hide_shots_toggle"]
+            .settings-param__name::after {
                 background: #2ecc71;
             }
         `;
         document.head.appendChild(style);
-    }
-
-    function attachDot() {
-        const param = document.querySelector(
-            '.settings-param[data-name="hide_shots_toggle"]'
-        );
-        if (!param) return;
-
-        const name = param.querySelector('.settings-param__name');
-        if (!name) return;
-
-        if (name.querySelector('.hide-shots-dot')) return;
-
-        name.classList.add('hide-shots-name');
-
-        const dot = document.createElement('div');
-        dot.className = 'hide-shots-dot';
-        name.appendChild(dot);
-
-        updateDot();
-    }
-
-    function updateDot() {
-        const dot = document.querySelector('.hide-shots-dot');
-        if (!dot) return;
-
-        dot.classList.toggle('enabled', isEnabled());
     }
 
     /* ---------------- SETTINGS ---------------- */
@@ -127,22 +106,23 @@
             },
             onChange: function () {
                 Lampa.Storage.set('hide_shots', !isEnabled());
+                updateBodyClass();
                 applyHideShots();
-                updateDot();
             }
         });
 
         Lampa.Listener.follow('settings', function (e) {
             if (e.type === 'open' && e.name === 'hide_shots') {
-                setTimeout(function () {
-                    injectStyle();
-                    attachDot();
-                }, 20);
+                injectStyle();
+                updateBodyClass();
             }
         });
     }
 
     /* ---------------- INIT ---------------- */
+
+    injectStyle();
+    updateBodyClass();
 
     if (isEnabled()) {
         applyHideShots();
