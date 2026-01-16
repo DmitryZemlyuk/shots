@@ -1,3 +1,4 @@
+// == Hide Shots | Toggle + Status Indicator ==
 (function () {
     'use strict';
 
@@ -10,10 +11,25 @@
                 en: 'Hide Shots',
                 uk: 'Приховати Shots'
             },
-            hide_shots_button: {
-                ru: 'Скрывать Shots',
-                en: 'Hide Shots',
-                uk: 'Приховувати Shots'
+            hide_shots_status_title: {
+                ru: 'Статус',
+                en: 'Status',
+                uk: 'Статус'
+            },
+            hide_shots_status_on: {
+                ru: 'ВКЛ',
+                en: 'ON',
+                uk: 'УВІМК'
+            },
+            hide_shots_status_off: {
+                ru: 'ВЫКЛ',
+                en: 'OFF',
+                uk: 'ВИМК'
+            },
+            hide_shots_toggle: {
+                ru: 'Переключить',
+                en: 'Toggle',
+                uk: 'Перемкнути'
             },
             hide_shots_enabled: {
                 ru: 'Shots скрыты',
@@ -57,11 +73,7 @@
     /* ---------------- OBSERVER ---------------- */
 
     const observer = new MutationObserver(applyHideShots);
-
-    observer.observe(document.body, {
-        childList: true,
-        subtree: true
-    });
+    observer.observe(document.body, { childList: true, subtree: true });
 
     /* ---------------- SETTINGS ---------------- */
 
@@ -79,17 +91,32 @@
         Lampa.SettingsApi.addParam({
             component: 'hide_shots',
             param: {
+                name: 'hide_shots_status',
+                type: 'static'
+            },
+            field: {
+                name: Lampa.Lang.translate('hide_shots_status_title'),
+                description: isEnabled()
+                    ? Lampa.Lang.translate('hide_shots_status_on')
+                    : Lampa.Lang.translate('hide_shots_status_off')
+            }
+        });
+
+        Lampa.SettingsApi.addParam({
+            component: 'hide_shots',
+            param: {
                 name: 'hide_shots_toggle',
                 type: 'button'
             },
             field: {
-                name: Lampa.Lang.translate('hide_shots_button')
+                name: Lampa.Lang.translate('hide_shots_toggle')
             },
             onChange: function () {
                 const enabled = !isEnabled();
                 Lampa.Storage.set('hide_shots', enabled);
 
                 applyHideShots();
+                Lampa.Settings.update();
 
                 if (Lampa.Noty) {
                     Lampa.Noty.show(
