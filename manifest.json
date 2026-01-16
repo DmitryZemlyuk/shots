@@ -1,0 +1,11 @@
+{
+  "id": "hide_shots",
+  "name": "Hide Shots",
+  "version": "1.0.0",
+  "description": "Hide SHots",
+  "author": "",
+  "type": "plugin",
+  "icon": "",
+  "dependencies": [],
+  "init": "shot.js"
+}
