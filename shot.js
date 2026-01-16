@@ -1,3 +1,4 @@
+// == Hide Shots | Separate Settings Screen (FINAL) ==
 (function () {
     'use strict';
 
@@ -6,6 +7,7 @@
     var STORAGE_KEY = 'hide_shots_enabled';
     var observer = null;
     var originalDisplay = new WeakMap();
+    var settings_registered = false;
 
     function isEnabled(v) {
         return v === true || v === 'true';
@@ -48,7 +50,7 @@
     }
 
     function startObserver() {
-        stopObserver();
+        if (observer) return;
         observer = new MutationObserver(applyHideState);
         observer.observe(document.body, { childList: true, subtree: true });
         applyHideState();
@@ -67,14 +69,16 @@
 
     Lampa.Listener.follow('app', function (e) {
         if (e.type !== 'ready') return;
+        if (settings_registered) return;
+        settings_registered = true;
 
         Lampa.SettingsApi.addComponent({
             component: 'hide_shots',
             name: 'Hide Shots',
             icon:
-            '<svg viewBox="0 0 512 512" fill="currentColor">' +
-            '<path d="M253.266 512a19.166 19.166 0 0 1-19.168-19.168V330.607l-135.071-.049a19.164 19.164 0 0 1-16.832-28.32L241.06 10.013a19.167 19.167 0 0 1 36.005 9.154v162.534h135.902a19.167 19.167 0 0 1 16.815 28.363L270.078 502.03a19.173 19.173 0 0 1-16.812 9.97z"/>' +
-            '</svg>'
+                '<svg viewBox="0 0 512 512" fill="currentColor">' +
+                '<path d="M253.266 512a19.166 19.166 0 0 1-19.168-19.168V330.607l-135.071-.049a19.164 19.164 0 0 1-16.832-28.32L241.06 10.013a19.167 19.167 0 0 1 36.005 9.154v162.534h135.902a19.167 19.167 0 0 1 16.815 28.363L270.078 502.03a19.173 19.173 0 0 1-16.812 9.97z"/>' +
+                '</svg>'
         });
 
         Lampa.SettingsApi.addParam({
@@ -92,8 +96,6 @@
                 applyState(value);
             }
         });
-
-        Lampa.SettingsApi.update();
 
         applyState(Lampa.Storage.get(STORAGE_KEY, true));
     });
