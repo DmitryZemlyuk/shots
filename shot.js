@@ -7,12 +7,30 @@
     var STORAGE_KEY = 'hide_shots_enabled';
     var observer = null;
 
+    // Храним исходные display
+    var originalDisplay = new WeakMap();
+
     function isEnabled(value) {
         return value === true || value === 'true';
     }
 
-    function hideShots() {
-        if (!isEnabled(Lampa.Storage.get(STORAGE_KEY, true))) return;
+    function hideElement(el) {
+        if (!originalDisplay.has(el)) {
+            originalDisplay.set(el, el.style.display || '');
+        }
+        el.style.display = 'none';
+    }
+
+    function showElement(el) {
+        if (originalDisplay.has(el)) {
+            el.style.display = originalDisplay.get(el);
+        } else {
+            el.style.display = '';
+        }
+    }
+
+    function applyHideState() {
+        var enabled = isEnabled(Lampa.Storage.get(STORAGE_KEY, true));
 
         document.querySelectorAll('.selectbox-item').forEach(function (item) {
             var use = item.querySelector('use');
@@ -23,33 +41,36 @@
                 use.getAttribute('href');
 
             if (href === '#sprite-shots') {
-                item.style.display = 'none';
+                enabled ? hideElement(item) : showElement(item);
             }
         });
 
         document
             .querySelectorAll('.shots-player-recordbutton')
             .forEach(function (el) {
-                el.style.display = 'none';
+                enabled ? hideElement(el) : showElement(el);
             });
     }
 
     function startObserver() {
         stopObserver();
 
-        observer = new MutationObserver(hideShots);
+        observer = new MutationObserver(applyHideState);
         observer.observe(document.body, {
             childList: true,
             subtree: true
         });
 
-        hideShots();
+        applyHideState();
     }
 
     function stopObserver() {
         if (!observer) return;
         observer.disconnect();
         observer = null;
+
+        // При выключении — вернуть всё
+        applyHideState();
     }
 
     function applyState(value) {
