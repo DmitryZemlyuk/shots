@@ -52,30 +52,33 @@
         else stopObserver();
     }
 
-    Lampa.SettingsApi.addParam({
-        component: 'plugin',
-        param: {
-            name: STORAGE_KEY,
-            type: 'toggle',
-            default: true
-        },
-        field: {
-            name: 'Скрывать Shots'
-        },
-        onChange: function (value) {
-            togglePlugin(value);
-        }
-    });
+    Lampa.Listener.follow('app', function (event) {
+        if (event.type !== 'ready') return;
 
-    Lampa.Plugin.add({
-        name: 'Hide Shots',
+        Lampa.SettingsApi.addParam({
+            component: 'plugin',
+            param: {
+                name: STORAGE_KEY,
+                type: 'toggle',
+                default: true
+            },
+            field: {
+                name: 'Скрывать Shots'
+            },
+            onChange: function (value) {
+                togglePlugin(value);
+            }
+        });
+        Lampa.Plugin.add({
+            name: 'Hide Shots',
 
-        onStart: function () {
-            togglePlugin(Lampa.Storage.get(STORAGE_KEY, true));
-        },
+            onStart: function () {
+                togglePlugin(Lampa.Storage.get(STORAGE_KEY, true));
+            },
 
-        onStop: function () {
-            stopObserver();
-        }
+            onStop: function () {
+                stopObserver();
+            }
+        });
     });
 })();
