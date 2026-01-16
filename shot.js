@@ -6,12 +6,10 @@
 
     var STORAGE_KEY = 'hide_shots_enabled';
     var observer = null;
-
-    // Храним исходные display
     var originalDisplay = new WeakMap();
 
-    function isEnabled(value) {
-        return value === true || value === 'true';
+    function isEnabled(v) {
+        return v === true || v === 'true';
     }
 
     function hideElement(el) {
@@ -22,11 +20,9 @@
     }
 
     function showElement(el) {
-        if (originalDisplay.has(el)) {
-            el.style.display = originalDisplay.get(el);
-        } else {
-            el.style.display = '';
-        }
+        el.style.display = originalDisplay.has(el)
+            ? originalDisplay.get(el)
+            : '';
     }
 
     function applyHideState() {
@@ -54,13 +50,8 @@
 
     function startObserver() {
         stopObserver();
-
         observer = new MutationObserver(applyHideState);
-        observer.observe(document.body, {
-            childList: true,
-            subtree: true
-        });
-
+        observer.observe(document.body, { childList: true, subtree: true });
         applyHideState();
     }
 
@@ -68,30 +59,18 @@
         if (!observer) return;
         observer.disconnect();
         observer = null;
-
-        // При выключении — вернуть всё
-        applyHideState();
+        applyHideState(); // вернуть элементы
     }
 
-    function applyState(value) {
-        if (isEnabled(value)) startObserver();
-        else stopObserver();
+    function applyState(v) {
+        isEnabled(v) ? startObserver() : stopObserver();
     }
 
     Lampa.Listener.follow('app', function (e) {
         if (e.type !== 'ready') return;
 
-        Lampa.SettingsApi.addComponent({
-            component: 'hide_shots',
-            name: 'Hide Shots',
-            icon:
-                '<svg viewBox="0 0 24 24" fill="currentColor">' +
-                '<path d="M3 4h18v2H3zm0 7h18v2H3zm0 7h18v2H3z"/>' +
-                '</svg>'
-        });
-
         Lampa.SettingsApi.addParam({
-            component: 'hide_shots',
+            component: 'main',
             param: {
                 name: STORAGE_KEY,
                 type: 'toggle',
