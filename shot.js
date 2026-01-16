@@ -62,7 +62,7 @@
         style.id = 'hide-shots-style';
         style.textContent = `
             /* кружок */
-            .settings-param[data-name="hide_shots_toggle"] .settings-param__name::after {
+            .settings-param[data-name="hide_shots_toggle"] .settings-param__name::before {
                 content: '';
                 width: 10px;
                 height: 10px;
@@ -72,12 +72,13 @@
                 margin-left: 12px;
                 vertical-align: middle;
                 top: -2px;
+                left: -7px;
                 position: relative;
             }
 
             body.hide-shots-enabled
             .settings-param[data-name="hide_shots_toggle"]
-            .settings-param__name::after {
+            .settings-param__name::before {
                 background: #2ecc71;
             }
         `;
