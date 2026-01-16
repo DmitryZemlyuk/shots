@@ -37,27 +37,18 @@
         applyHideState();
     }
 
+    // === SETTINGS (MAIN LEVEL) ===
     Lampa.Listener.follow('app', function (e) {
         if (e.type !== 'ready') return;
-
-        // экран
-        Lampa.SettingsApi.addComponent({
-            component: 'hide_shots',
-            name: 'Hide Shots',
-            icon:
-                '<svg viewBox="0 0 512 512" fill="currentColor">' +
-                '<path d="M253.266 512a19.166 19.166 0 0 1-19.168-19.168V330.607l-135.071-.049a19.164 19.164 0 0 1-16.832-28.32L241.06 10.013a19.167 19.167 0 0 1 36.005 9.154v162.534h135.902a19.167 19.167 0 0 1 16.815 28.363L270.078 502.03a19.173 19.173 0 0 1-16.812 9.97z"/>' +
-                '</svg>'
-        });
-
+    
         Lampa.SettingsApi.addParam({
-            component: 'hide_shots',
+            component: 'main', // ← ВАЖНО: главный экран настроек
             param: {
-                name: STORAGE_KEY,
+                name: 'hide_shots_enabled',
                 type: 'select',
                 values: {
-                    'true': 'Включено',
-                    'false': 'Выключено'
+                    'true': 'Скрыть Shots',
+                    'false': 'Показать Shots'
                 },
                 'default': 'true'
             },
@@ -66,12 +57,14 @@
                 description: 'Убирает пункт Shots и кнопку записи'
             },
             onChange: function (value) {
-                Lampa.Storage.set(STORAGE_KEY, value);
+                Lampa.Storage.set('hide_shots_enabled', value);
                 applyHideState();
             }
         });
-
+    
+        // применяем при старте
         startObserver();
     });
+
 
 })();
