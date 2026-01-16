@@ -39,32 +39,32 @@
 
     // === SETTINGS (MAIN LEVEL) ===
     Lampa.Listener.follow('app', function (e) {
-        if (e.type !== 'ready') return;
-    
-        Lampa.SettingsApi.addParam({
-            component: 'main', // ← ВАЖНО: главный экран настроек
-            param: {
-                name: 'hide_shots_enabled',
-                type: 'select',
-                values: {
-                    'true': 'Скрыть Shots',
-                    'false': 'Показать Shots'
-                },
-                'default': 'true'
+    if (e.type !== 'ready') return;
+
+    Lampa.SettingsApi.addParam({
+        component: 'interface', // ← ВАЖНО
+        param: {
+            name: 'hide_shots_enabled',
+            type: 'select',
+            values: {
+                'true': 'Скрыть Shorts',
+                'false': 'Показать Shorts'
             },
-            field: {
-                name: 'Скрывать Shots',
-                description: 'Убирает пункт Shots и кнопку записи'
-            },
-            onChange: function (value) {
-                Lampa.Storage.set('hide_shots_enabled', value);
-                applyHideState();
-            }
-        });
-    
-        // применяем при старте
-        startObserver();
+            'default': 'true'
+        },
+        field: {
+            name: 'Скрывать Shots',
+            description: 'Убирает пункт Shots и кнопку записи'
+        },
+        onChange: function (value) {
+            Lampa.Storage.set('hide_shots_enabled', value);
+            applyHideState();
+        }
     });
+
+    startObserver();
+    });
+
 
 
 })();
