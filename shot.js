@@ -1,7 +1,9 @@
 (function () {
     'use strict';
 
-    if (!window.Lampa) return;
+    if (!window.Lampa || !Lampa.Plugin) return;
+
+    var observer;
 
     function hideShots() {
         document.querySelectorAll('.selectbox-item').forEach(function (item) {
@@ -24,8 +26,6 @@
             });
     }
 
-    var observer;
-
     function startObserver() {
         if (observer) return;
 
@@ -44,12 +44,14 @@
         observer = null;
     }
 
-    Lampa.Plugin.create('hide_shots', {
-        init: function () {
+    Lampa.Plugin.add({
+        name: 'Hide Shots',
+
+        onStart: function () {
             startObserver();
         },
 
-        destroy: function () {
+        onStop: function () {
             stopObserver();
         }
     });
