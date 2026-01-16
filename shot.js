@@ -1,11 +1,14 @@
 (function () {
     'use strict';
 
-    if (!window.Lampa || !Lampa.Plugin) return;
+    if (!window.Lampa) return;
 
     var observer;
+    var STORAGE_KEY = 'hide_shots_enabled';
 
     function hideShots() {
+        if (!Lampa.Storage.get(STORAGE_KEY, true)) return;
+
         document.querySelectorAll('.selectbox-item').forEach(function (item) {
             var use = item.querySelector('use');
             if (!use) return;
@@ -44,11 +47,31 @@
         observer = null;
     }
 
+    function togglePlugin(enabled) {
+        if (enabled) startObserver();
+        else stopObserver();
+    }
+
+    Lampa.SettingsApi.addParam({
+        component: 'plugin',
+        param: {
+            name: STORAGE_KEY,
+            type: 'toggle',
+            default: true
+        },
+        field: {
+            name: 'Скрывать Shots'
+        },
+        onChange: function (value) {
+            togglePlugin(value);
+        }
+    });
+
     Lampa.Plugin.add({
         name: 'Hide Shots',
 
         onStart: function () {
-            startObserver();
+            togglePlugin(Lampa.Storage.get(STORAGE_KEY, true));
         },
 
         onStop: function () {
