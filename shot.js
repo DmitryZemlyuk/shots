@@ -10,30 +10,31 @@
                 en: 'Hide Shots',
                 uk: 'Приховати Shots'
             },
-            hide_shots_on: {
-                ru: 'Скрывать Shots: ВКЛ',
-                en: 'Hide Shots: ON',
-                uk: 'Приховувати Shots: УВІМК'
+            hide_shots_button: {
+                ru: 'Скрывать Shots',
+                en: 'Hide Shots',
+                uk: 'Приховувати Shots'
             },
-            hide_shots_off: {
-                ru: 'Скрывать Shots: ВЫКЛ',
-                en: 'Hide Shots: OFF',
-                uk: 'Приховувати Shots: ВИМК'
+            hide_shots_enabled: {
+                ru: 'Shots скрыты',
+                en: 'Shots hidden',
+                uk: 'Shots приховано'
+            },
+            hide_shots_disabled: {
+                ru: 'Shots показаны',
+                en: 'Shots shown',
+                uk: 'Shots показано'
             }
         });
     }
 
-    /* ---------------- HELPERS ---------------- */
+    /* ---------------- STATE ---------------- */
 
     function isEnabled() {
         return Lampa.Storage.get('hide_shots', false) === true;
     }
 
-    function getButtonTitle() {
-        return isEnabled()
-            ? Lampa.Lang.translate('hide_shots_on')
-            : Lampa.Lang.translate('hide_shots_off');
-    }
+    /* ---------------- LOGIC ---------------- */
 
     function applyHideShots() {
         if (!isEnabled()) return;
@@ -57,20 +58,15 @@
 
     const observer = new MutationObserver(applyHideShots);
 
-    function startObserver() {
-        observer.observe(document.body, {
-            childList: true,
-            subtree: true
-        });
-        applyHideShots();
-    }
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
 
     /* ---------------- SETTINGS ---------------- */
 
-    function initSettings() {
-        if (!Lampa.SettingsApi) return;
+    if (window.Lampa && Lampa.SettingsApi) {
 
-        // пункт меню
         Lampa.SettingsApi.addComponent({
             component: 'hide_shots',
             name: Lampa.Lang.translate('hide_shots_title'),
@@ -87,26 +83,29 @@
                 type: 'button'
             },
             field: {
-                name: getButtonTitle()
+                name: Lampa.Lang.translate('hide_shots_button')
             },
             onChange: function () {
-                Lampa.Storage.set('hide_shots', !isEnabled());
-                this.field.name = getButtonTitle();
-                Lampa.Settings.update();
+                const enabled = !isEnabled();
+                Lampa.Storage.set('hide_shots', enabled);
+
                 applyHideShots();
+
+                if (Lampa.Noty) {
+                    Lampa.Noty.show(
+                        Lampa.Lang.translate(
+                            enabled ? 'hide_shots_enabled' : 'hide_shots_disabled'
+                        )
+                    );
+                }
             }
         });
     }
 
     /* ---------------- INIT ---------------- */
 
-    function init() {
-        if (!window.Lampa || !Lampa.Storage) return;
-
-        initSettings();
-        startObserver();
+    if (isEnabled()) {
+        applyHideShots();
     }
-
-    init();
 
 })();
