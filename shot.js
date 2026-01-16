@@ -1,4 +1,3 @@
-// == Hide Shots | Lampa Plugin ==
 (function () {
     'use strict';
 
@@ -59,18 +58,18 @@
         if (!observer) return;
         observer.disconnect();
         observer = null;
-        applyHideState(); // вернуть элементы
+        applyHideState();
     }
 
     function applyState(v) {
         isEnabled(v) ? startObserver() : stopObserver();
     }
 
-    Lampa.Listener.follow('app', function (e) {
-        if (e.type !== 'ready') return;
+    Lampa.Listener.follow('settings', function (e) {
+        if (e.type !== 'open') return;
 
         Lampa.SettingsApi.addParam({
-            component: 'main',
+            component: 'settings',
             param: {
                 name: STORAGE_KEY,
                 type: 'toggle',
