@@ -46,8 +46,8 @@
 
     /* ---------------- OBSERVER ---------------- */
 
-    const observer = new MutationObserver(applyHideShots);
-    observer.observe(document.body, { childList: true, subtree: true });
+    new MutationObserver(applyHideShots)
+        .observe(document.body, { childList: true, subtree: true });
 
     /* ---------------- CSS ---------------- */
 
@@ -57,24 +57,43 @@
         const style = document.createElement('style');
         style.id = 'hide-shots-style';
         style.textContent = `
-            .hide-shots-dot {
-                width: 10px;
-                height: 10px;
-                border-radius: 50%;
-                margin-left: auto;
-                background-color: #666;
-                flex-shrink: 0;
-            }
-            .hide-shots-dot.enabled {
-                background-color: #2ecc71;
-            }
-            .settings-param__content {
+            .hide-shots-name {
                 display: flex;
                 align-items: center;
                 gap: 10px;
             }
+            .hide-shots-dot {
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                background: #666;
+                flex-shrink: 0;
+            }
+            .hide-shots-dot.enabled {
+                background: #2ecc71;
+            }
         `;
         document.head.appendChild(style);
+    }
+
+    function attachDot() {
+        const param = document.querySelector(
+            '.settings-param[data-name="hide_shots_toggle"]'
+        );
+        if (!param) return;
+
+        const name = param.querySelector('.settings-param__name');
+        if (!name) return;
+
+        if (name.querySelector('.hide-shots-dot')) return;
+
+        name.classList.add('hide-shots-name');
+
+        const dot = document.createElement('div');
+        dot.className = 'hide-shots-dot';
+        name.appendChild(dot);
+
+        updateDot();
     }
 
     function updateDot() {
@@ -113,20 +132,14 @@
             }
         });
 
-        setTimeout(() => {
-            injectStyle();
-
-            const row = document.querySelector(
-                '[data-name="hide_shots_toggle"] .settings-param__content'
-            );
-
-            if (row && !row.querySelector('.hide-shots-dot')) {
-                const dot = document.createElement('div');
-                dot.className = 'hide-shots-dot';
-                row.appendChild(dot);
-                updateDot();
+        Lampa.Listener.follow('settings', function (e) {
+            if (e.type === 'open' && e.name === 'hide_shots') {
+                setTimeout(function () {
+                    injectStyle();
+                    attachDot();
+                }, 20);
             }
-        }, 300);
+        });
     }
 
     /* ---------------- INIT ---------------- */
