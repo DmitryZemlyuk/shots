@@ -7,8 +7,12 @@
     var STORAGE_KEY = 'hide_shots_enabled';
     var observer = null;
 
+    function isEnabled(value) {
+        return value === true || value === 'true';
+    }
+
     function hideShots() {
-        if (!Lampa.Storage.get(STORAGE_KEY, true)) return;
+        if (!isEnabled(Lampa.Storage.get(STORAGE_KEY, true))) return;
 
         document.querySelectorAll('.selectbox-item').forEach(function (item) {
             var use = item.querySelector('use');
@@ -31,7 +35,7 @@
     }
 
     function startObserver() {
-        if (observer) return;
+        stopObserver();
 
         observer = new MutationObserver(hideShots);
         observer.observe(document.body, {
@@ -48,8 +52,8 @@
         observer = null;
     }
 
-    function toggle(value) {
-        if (value) startObserver();
+    function applyState(value) {
+        if (isEnabled(value)) startObserver();
         else stopObserver();
     }
 
@@ -59,7 +63,10 @@
         Lampa.SettingsApi.addComponent({
             component: 'hide_shots',
             name: 'Hide Shots',
-            icon: '<svg viewBox="0 0 24 24"><path d="M3 4h18v2H3zm0 7h18v2H3zm0 7h18v2H3z"/></svg>'
+            icon:
+                '<svg viewBox="0 0 24 24" fill="currentColor">' +
+                '<path d="M3 4h18v2H3zm0 7h18v2H3zm0 7h18v2H3z"/>' +
+                '</svg>'
         });
 
         Lampa.SettingsApi.addParam({
@@ -74,10 +81,10 @@
                 description: 'Убирает пункт Shots и кнопку записи'
             },
             onChange: function (value) {
-                toggle(value);
+                applyState(value);
             }
         });
 
-        toggle(Lampa.Storage.get(STORAGE_KEY, true));
+        applyState(Lampa.Storage.get(STORAGE_KEY, true));
     });
 })();
