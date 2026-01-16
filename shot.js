@@ -1,4 +1,3 @@
-// == Hide Shots | Toggle + Status Indicator ==
 (function () {
     'use strict';
 
@@ -11,35 +10,10 @@
                 en: 'Hide Shots',
                 uk: 'Приховати Shots'
             },
-            hide_shots_status_title: {
-                ru: 'Статус',
-                en: 'Status',
-                uk: 'Статус'
-            },
-            hide_shots_status_on: {
-                ru: 'ВКЛ',
-                en: 'ON',
-                uk: 'УВІМК'
-            },
-            hide_shots_status_off: {
-                ru: 'ВЫКЛ',
-                en: 'OFF',
-                uk: 'ВИМК'
-            },
-            hide_shots_toggle: {
-                ru: 'Переключить',
-                en: 'Toggle',
-                uk: 'Перемкнути'
-            },
-            hide_shots_enabled: {
-                ru: 'Shots скрыты',
-                en: 'Shots hidden',
-                uk: 'Shots приховано'
-            },
-            hide_shots_disabled: {
-                ru: 'Shots показаны',
-                en: 'Shots shown',
-                uk: 'Shots показано'
+            hide_shots_button: {
+                ru: 'Скрывать Shots',
+                en: 'Hide Shots',
+                uk: 'Приховувати Shots'
             }
         });
     }
@@ -75,6 +49,41 @@
     const observer = new MutationObserver(applyHideShots);
     observer.observe(document.body, { childList: true, subtree: true });
 
+    /* ---------------- CSS ---------------- */
+
+    function injectStyle() {
+        if (document.getElementById('hide-shots-style')) return;
+
+        const style = document.createElement('style');
+        style.id = 'hide-shots-style';
+        style.textContent = `
+            .hide-shots-dot {
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                margin-left: auto;
+                background-color: #666;
+                flex-shrink: 0;
+            }
+            .hide-shots-dot.enabled {
+                background-color: #2ecc71;
+            }
+            .settings-param__content {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    function updateDot() {
+        const dot = document.querySelector('.hide-shots-dot');
+        if (!dot) return;
+
+        dot.classList.toggle('enabled', isEnabled());
+    }
+
     /* ---------------- SETTINGS ---------------- */
 
     if (window.Lampa && Lampa.SettingsApi) {
@@ -91,42 +100,33 @@
         Lampa.SettingsApi.addParam({
             component: 'hide_shots',
             param: {
-                name: 'hide_shots_status',
-                type: 'static'
-            },
-            field: {
-                name: Lampa.Lang.translate('hide_shots_status_title'),
-                description: isEnabled()
-                    ? Lampa.Lang.translate('hide_shots_status_on')
-                    : Lampa.Lang.translate('hide_shots_status_off')
-            }
-        });
-
-        Lampa.SettingsApi.addParam({
-            component: 'hide_shots',
-            param: {
                 name: 'hide_shots_toggle',
                 type: 'button'
             },
             field: {
-                name: Lampa.Lang.translate('hide_shots_toggle')
+                name: Lampa.Lang.translate('hide_shots_button')
             },
             onChange: function () {
-                const enabled = !isEnabled();
-                Lampa.Storage.set('hide_shots', enabled);
-
+                Lampa.Storage.set('hide_shots', !isEnabled());
                 applyHideShots();
-                Lampa.Settings.update();
-
-                if (Lampa.Noty) {
-                    Lampa.Noty.show(
-                        Lampa.Lang.translate(
-                            enabled ? 'hide_shots_enabled' : 'hide_shots_disabled'
-                        )
-                    );
-                }
+                updateDot();
             }
         });
+
+        setTimeout(() => {
+            injectStyle();
+
+            const row = document.querySelector(
+                '[data-name="hide_shots_toggle"] .settings-param__content'
+            );
+
+            if (row && !row.querySelector('.hide-shots-dot')) {
+                const dot = document.createElement('div');
+                dot.className = 'hide-shots-dot';
+                row.appendChild(dot);
+                updateDot();
+            }
+        }, 300);
     }
 
     /* ---------------- INIT ---------------- */
